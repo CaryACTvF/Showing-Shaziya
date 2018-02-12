@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML5 Canvas</title>
+</head>
+<body>
+<canvas id="draw" width="600" height="600"></canvas>
+
+<script>
+	const canvas = document.querySelector('#draw');
+	const ctx = canvas.getContext('2d');
+	const width = 100;
+	const height = 50;
+	const heldRectangle = [];
+	const rectangles = [
+		{'xrect': 200, 'yrect': 300},
+		{'xrect': 400, 'yrect': 300},
+		{'xrect': 150, 'yrect': 400}
+		];
+
+	let mousedown = false;
+
+	function draw() {
+		ctx.fillStyle = '#550055';
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+		ctx.fillStyle = '#BADA55';
+		for (let rectangle of rectangles) {
+			ctx.fillRect(rectangle.xrect,
+				rectangle.yrect,
+				width,
+				height
+			);
+		}
+	};
+
+	function mousedownDraw(e) {
+		ctx.fillStyle = '#550055';
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+		ctx.fillStyle = '#BADA55';
+		for (let rectangle of rectangles) {
+			ctx.fillRect(rectangle.xrect,
+				rectangle.yrect,
+				width,
+				height
+			);
+		}
+
+		if (heldRectangle[0]) {
+			ctx.fillRect(-heldRectangle[0].mouseOffsetX + e.offsetX,
+				-heldRectangle[0].mouseOffsetY + e.offsetY,
+				width,
+				height);
+		}
+	};
+
+	draw();
+
+	canvas.addEventListener('mousedown', (e) => {
+		mousedown = true;
+		for (let i = 0; i < rectangles.length; i++) {
+			if (e.offsetX > rectangles[i].xrect &&
+				e.offsetX < rectangles[i].xrect + width &&
+				e.offsetY > rectangles[i].yrect &&
+				e.offsetY < rectangles[i].yrect + height) 
+				{
+					const mouseOffsetX = e.offsetX - rectangles[i].xrect;
+					const mouseOffsetY = e.offsetY - rectangles[i].yrect;
+					heldRectangle.push({
+						'mouseOffsetX': mouseOffsetX,
+						'mouseOffsetY': mouseOffsetY
+					});
+					// console.log(`You hit rectangle #${i}.`);
+					rectangles.splice(i,1);
+					mousedownDraw(e);
+				}
+		};	
+	})
+
+	canvas.addEventListener('mousemove', (e) => {
+		mousedownDraw(e);
+	});
+
+	canvas.addEventListener('mouseup', (e) => {
+		if (mousedown && heldRectangle[0]) {
+			// console.log(e.offsetX - heldRectangle[0].mouseOffsetX);
+			rectangles.push({'xrect': -heldRectangle[0].mouseOffsetX + e.offsetX, 'yrect': -heldRectangle[0].mouseOffsetY + e.offsetY})
+		}
+		heldRectangle.pop();
+		mousedown = false;
+		draw();
+	});
+
+</script>
+
+</body>
+</html>
